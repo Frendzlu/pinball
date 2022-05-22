@@ -1,0 +1,1 @@
+export type Json<K> = {[key: string]: K}
