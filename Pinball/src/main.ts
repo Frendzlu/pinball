@@ -2,11 +2,18 @@ import "./style.css"
 
 import SixteenSegmentDisplay from "./SixteenSegmentDisplay/SixteenSegmentDisplay";
 import {GameArea} from "./GameArea/GameArea";
+import {Envs} from "./envs";
 
 let display = new SixteenSegmentDisplay("display", "test")
 display.clearText()
-display.renderText("Hello world 1")
+display.renderText("!%*()-_=+\\|{}[]'\"`.,?/")
 
 let x = new GameArea("ga", "gac")
-x.isDebugOn = true
+Envs.debugMode = true
+Envs.preferredDarkMode = true
+Envs.showBounceChecks = true
+var envs = Envs
+console.log(envs)
+display.clearText()
+display.renderText("Player 1ś")
 x.render()

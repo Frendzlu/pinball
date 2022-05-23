@@ -20,7 +20,7 @@ export namespace Hitbox {
 
     type HitboxOptions = {
         eventHandle?: string,
-        shouldBounce: boolean
+        shouldBounce?: boolean
     }
 
     const defaultHitboxOptions: HitboxOptions = {
@@ -67,6 +67,7 @@ export namespace Hitbox {
             this.s = p
             this.r = r
             this.options = options
+            if (this.options.shouldBounce === undefined) this.options.shouldBounce = true
         }
     }
 
