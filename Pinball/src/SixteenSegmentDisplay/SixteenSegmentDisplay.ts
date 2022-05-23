@@ -1,15 +1,10 @@
-import {Json} from "../types";
+import {DeepPartial, Json} from "../types";
 import colors from "../../data/colors.json"
 import charMap from "./mappings.json"
 import "../proto.ts"
+import {CanvasOptions, Renderer} from "../Renderer";
 
-interface InputDisplayCreationOptions {
-    numberOfCharacters?: number,
-    width?: number,
-    height?: number
-}
-
-interface DisplayCreationOptions extends InputDisplayCreationOptions {
+interface DisplayCreationOptions extends CanvasOptions {
     numberOfCharacters: number,
     width: number,
     height: number
@@ -27,30 +22,19 @@ const defaultCreationOptions: DisplayCreationOptions = {
     verticalMargin: 1,
 }
 
-export default class SixteenSegmentDisplay {
-    htmlElement: HTMLCanvasElement
-    parentElement: HTMLDivElement
+export default class SixteenSegmentDisplay extends Renderer {
     displacement: number = 0
     initialValues: [number, number, number, number][][] = []
     options: DisplayCreationOptions
 
 
-    constructor(parentElementID: string, id: string, options: InputDisplayCreationOptions = defaultCreationOptions) {
-        this.parentElement = (document.getElementById(parentElementID) as HTMLDivElement) || document.createElement("div", {
-            id: parentElementID
-        })
-        this.htmlElement = document.createElement("canvas")
-        this.htmlElement.id = id
+    constructor(parentElementID: string, id: string, options: DeepPartial<DisplayCreationOptions> = defaultCreationOptions) {
         for (let optionsKey in Object.keys(defaultCreationOptions)) {
             (options as Json<number>)[optionsKey] = (options as Json<number>)[optionsKey] || (defaultCreationOptions as Json<any>)[optionsKey]
         }
-        this.options = options as DisplayCreationOptions
-        this.htmlElement.width = this.options.width!
-        this.htmlElement.height = this.options.height!
-        this.parentElement.append(this.htmlElement)
-        let ctx = this.htmlElement.getContext('2d')!
-        ctx.fillStyle = "black"
-        ctx.fillRect(0, 0, this.options.width, this.options.height)
+        let parsedOptions = options as DisplayCreationOptions
+        super(parentElementID, id, parsedOptions)
+        this.options = parsedOptions
         this.calculateRectangles()
     }
 

@@ -5,7 +5,8 @@ interface IElementCreationOptions extends ElementCreationOptions {
     className?: string
     id?: string
     style?: Partial<CSSStyleDeclaration>
-
+    width?: number,
+    height?: number
     innerHTML?: string
     innerText?: string
 
@@ -15,6 +16,10 @@ interface IElementCreationOptions extends ElementCreationOptions {
 declare global{
     interface Document {
         createElement<K extends keyof HTMLElementTagNameMap>(tagName: K, options?: IElementCreationOptions | undefined): HTMLElementTagNameMap[K]
+    }
+
+    interface HTMLElement {
+        appendTo(element: HTMLElement): this
     }
 }
 
@@ -34,6 +39,10 @@ document.createElement = function (original: <K extends keyof HTMLElementTagName
                     (el as {[key: string]: any})[key as string] = value
                 }
             }
+        }
+        el.appendTo = function (element: HTMLElement): HTMLElementTagNameMap[K] {
+            element.append(el)
+            return el
         }
         return el
     }
