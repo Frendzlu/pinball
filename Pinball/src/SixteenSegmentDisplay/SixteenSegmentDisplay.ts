@@ -1,4 +1,4 @@
-import {DeepPartial, Json} from "../types";
+import {Json} from "../types";
 import colors from "../../data/colors.json"
 import charMap from "./mappings.json"
 import "../proto.ts"
@@ -28,7 +28,7 @@ export default class SixteenSegmentDisplay extends Renderer {
     options: DisplayCreationOptions
 
 
-    constructor(parentElementID: string, id: string, options: DeepPartial<DisplayCreationOptions> = defaultCreationOptions) {
+    constructor(parentElementID: string, id: string, options: Partial<DisplayCreationOptions> = defaultCreationOptions) {
         for (let optionsKey in Object.keys(defaultCreationOptions)) {
             (options as Json<number>)[optionsKey] = (options as Json<number>)[optionsKey] || (defaultCreationOptions as Json<any>)[optionsKey]
         }

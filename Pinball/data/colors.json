@@ -22,5 +22,11 @@
   "display": {
     "on": "#ff9316",
     "off": "#44380a"
+  },
+  "hitbox": {
+    "rotatable": "#ff9500",
+    "linear": "#00ffaa",
+    "circular": "#00ffff",
+    "anchor": "#8903ff"
   }
 }
