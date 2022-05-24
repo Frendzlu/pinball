@@ -3,6 +3,8 @@ import hitboxDefinitions from "./hitboxes.json"
 import {Hitbox} from "../Hitbox";
 import colors from "../../data/colors.json";
 import {Envs} from "../envs";
+import {Ball} from "../Ball";
+import {Geometry} from "../Geometry";
 
 const defaultOptions: CanvasOptions = {
     width: 1920,
@@ -12,6 +14,7 @@ const defaultOptions: CanvasOptions = {
 export class GameArea extends Renderer {
     hitboxDefinition: Hitbox.Definition
     options: CanvasOptions
+    ball: Ball
 
     constructor(parentElementID: string, id: string, options: CanvasOptions = defaultOptions) {
         super(parentElementID, id, options);
@@ -20,9 +23,13 @@ export class GameArea extends Renderer {
         this.hitboxDefinition.defaultDims = hitboxDefinitions.defaultDims
         this.hitboxDefinition.hitboxes = Hitbox.processHitboxes(hitboxDefinitions.hitboxes)
         console.log(this.hitboxDefinition)
+        this.ball = new Ball()
+        setInterval(() => {
+            this.render()
+        }, Envs.drawingTimeout)
     }
 
-    async render() {
+    render() {
         let ctx = this.htmlElement.getContext('2d')!
         let image = document.getElementById("mainImg") as HTMLImageElement
         if (Envs.debugMode) {
@@ -39,9 +46,14 @@ export class GameArea extends Renderer {
         if (Envs.debugMode) {
             this.drawHitboxes(this.hitboxDefinition.hitboxes)
         }
+        ctx.arc(this.ball.hitbox.s.x, this.ball.hitbox.s.y, this.ball.hitbox.r, 0, 2 * Math.PI)
+        ctx.moveTo(this.ball.hitbox.s.x, this.ball.hitbox.s.y)
+        let v = Geometry.Vector.from(this.ball.speed, this.ball.angle)
+        ctx.lineTo(this.ball.hitbox.s.x + v.x * 25, this.ball.hitbox.s.y + v.y * 25)
+        ctx.stroke()
     }
 
-    drawHitboxes(hitboxes: Hitbox.HitboxMap, keepColor = false) {
+    drawHitboxes(hitboxes: Hitbox.Map, keepColor = false) {
         let ctx = this.htmlElement.getContext('2d')!
         ctx.lineWidth = 3
         for (let hitbox of hitboxes.linear){

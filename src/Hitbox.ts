@@ -4,7 +4,7 @@ import {CollisionConditions} from "./Collisions";
 export namespace Hitbox {
     import Point = Geometry.Point;
 
-    export interface HitboxMap {
+    export interface Map {
         circular: Circular[],
         linear: Linear[],
         rotatable: Rotatable[]
@@ -15,21 +15,21 @@ export namespace Hitbox {
             x: number,
             y: number
         },
-        hitboxes: HitboxMap
+        hitboxes: Map
     }
 
-    type HitboxOptions = {
+    export type Options = {
         eventHandle?: string,
         shouldBounce?: boolean
     }
 
-    const defaultHitboxOptions: HitboxOptions = {
+    const defaultHitboxOptions: Options = {
         shouldBounce: true
     }
 
     export class EmptyDefinition implements Definition {
         defaultDims: { x: number; y: number };
-        hitboxes: Hitbox.HitboxMap;
+        hitboxes: Hitbox.Map;
 
         constructor() {
             this.defaultDims = {
@@ -57,9 +57,9 @@ export namespace Hitbox {
         maxRange: { x: [number, number]; y: [number, number] };
         r: number
         s: Geometry.Point
-        options: HitboxOptions
+        options: Options
 
-        constructor(p: Geometry.Point, r: number, options: HitboxOptions = defaultHitboxOptions) {
+        constructor(p: Geometry.Point, r: number, options: Options = defaultHitboxOptions) {
             this.maxRange = {
                 x: [p.x + r, p.x - r].sort((a, b) => a - b) as [number, number],
                 y: [p.y + r, p.y - r].sort((a, b) => a - b) as [number, number]
@@ -74,48 +74,48 @@ export namespace Hitbox {
     export class Linear {
         line: Segment
         condition: CollisionConditions
-        options: HitboxOptions
+        options: Options
 
-        constructor(p1: Geometry.Point, p2: Geometry.Point, condition: CollisionConditions, options: HitboxOptions = defaultHitboxOptions) {
+        constructor(p1: Geometry.Point, p2: Geometry.Point, condition: CollisionConditions, options: Options = defaultHitboxOptions) {
             this.line = new Segment(p1, p2)
             this.condition = condition
             this.options = options
         }
     }
 
-    type HitboxMapJsonConstruct = {
+    type MapJsonConstruct = {
         linear?: {
             a: Point
             b: Point
             condition: CollisionConditions
-            options?: HitboxOptions
+            options?: Options
         }[]
         circular?: {
             s: Point
             r: number
-            options?: HitboxOptions
+            options?: Options
         }[]
         rotatable?: {
             anchorPoint: Geometry.Point,
             allowedRotation: number,
-            hitboxes: HitboxMapJsonConstruct
+            hitboxes: MapJsonConstruct
         } []
     }
 
     export class Rotatable {
         anchorPoint: Geometry.Point
         allowedRotation: number
-        hitboxes: HitboxMap
+        hitboxes: Map
 
-        constructor(p: Geometry.Point, rotation: number, hitboxes: HitboxMapJsonConstruct) {
+        constructor(p: Geometry.Point, rotation: number, hitboxes: MapJsonConstruct) {
             this.anchorPoint = p
             this.allowedRotation = rotation
             this.hitboxes = processHitboxes(hitboxes)
         }
     }
 
-    export function processHitboxes (hitboxes: HitboxMapJsonConstruct) {
-        let processedHitboxes: HitboxMap = new EmptyDefinition().hitboxes
+    export function processHitboxes (hitboxes: MapJsonConstruct) {
+        let processedHitboxes: Map = new EmptyDefinition().hitboxes
         for (let hitbox of hitboxes.linear || []) {
             processedHitboxes.linear.push(new Linear(hitbox.a, hitbox.b, hitbox.condition, hitbox.options))
         }

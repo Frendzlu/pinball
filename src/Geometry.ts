@@ -49,4 +49,34 @@ export namespace Geometry {
     export function d2r(degrees: number) {
         return degrees * Math.PI / 180
     }
+
+    export type Vector = {
+        x: number
+        y: number
+    }
+
+    export namespace Vector {
+        export function from(length: number, angle: number): Vector {
+            return {
+                x: Math.cos(d2r(angle)) * length,
+                y: Math.sin(d2r(angle)) * length
+            }
+        }
+
+        export function add(v1: Vector, v2: Vector): Vector {
+            return {
+                x: v1.x + v2.x,
+                y: v1.y + v2.y
+            }
+        }
+
+        export function toVelocity(v: Vector){
+            let vM = v.y < 0 ? 1 : -1
+            let hM = v.x < 0 ? 180 : 0
+            return {
+                speed: Math.sqrt(v.x ** 2 + v.y ** 2),
+                angle: (hM * vM) - r2d(Math.atan((-v.y) / v.x))
+            }
+        }
+    }
 }

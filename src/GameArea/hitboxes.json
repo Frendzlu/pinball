@@ -165,6 +165,26 @@
           "y": 2379
         },
         "r": 27
+      },
+      {
+        "s": {
+          "x": 740,
+          "y": 745
+        },
+        "r": 90,
+        "options": {
+          "eventHandle": "bumper"
+        }
+      },
+      {
+        "s": {
+          "x": 1096,
+          "y": 1025
+        },
+        "r": 90,
+        "options": {
+          "eventHandle": "bumper"
+        }
       }
     ],
     "linear": [
