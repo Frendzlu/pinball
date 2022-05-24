@@ -34,6 +34,7 @@ export class KeyListener {
 	}
 
 	narrowSearch(e: KeyboardEvent) {
+		console.log(e.key, e.metaKey, e.altKey, e.ctrlKey, e.shiftKey)
 		let found = this.keyBinds.find(bind =>
 			bind.key == e.key &&
 			bind.meta == e.metaKey &&

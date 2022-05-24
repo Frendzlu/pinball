@@ -21,9 +21,10 @@ export class GameArea extends Renderer {
         this.options = options
         this.hitboxDefinition = new Hitbox.EmptyDefinition()
         this.hitboxDefinition.defaultDims = hitboxDefinitions.defaultDims
-        this.hitboxDefinition.hitboxes = Hitbox.processHitboxes(hitboxDefinitions.hitboxes)
-        console.log(this.hitboxDefinition)
-        this.ball = new Ball()
+        this.hitboxDefinition.hitboxes = Hitbox.process(hitboxDefinitions.hitboxes)
+
+        this.ball = new Ball(options)
+
         setInterval(() => {
             this.render()
         }, Envs.drawingTimeout)
@@ -45,12 +46,14 @@ export class GameArea extends Renderer {
         } else ctx.drawImage(image, 0, 0)
         if (Envs.debugMode) {
             this.drawHitboxes(this.hitboxDefinition.hitboxes)
+            ctx.arc(this.ball.hitbox.s.x, this.ball.hitbox.s.y, this.ball.hitbox.r, 0, 2 * Math.PI)
+            ctx.moveTo(this.ball.hitbox.s.x, this.ball.hitbox.s.y)
+            let v = Geometry.Vector.from(this.ball.speed, this.ball.angle)
+            ctx.lineTo(this.ball.hitbox.s.x + v.x * 25, this.ball.hitbox.s.y + v.y * 25)
+            ctx.stroke()
         }
-        ctx.arc(this.ball.hitbox.s.x, this.ball.hitbox.s.y, this.ball.hitbox.r, 0, 2 * Math.PI)
-        ctx.moveTo(this.ball.hitbox.s.x, this.ball.hitbox.s.y)
-        let v = Geometry.Vector.from(this.ball.speed, this.ball.angle)
-        ctx.lineTo(this.ball.hitbox.s.x + v.x * 25, this.ball.hitbox.s.y + v.y * 25)
-        ctx.stroke()
+        let ballImage = document.getElementById("ball") as HTMLImageElement
+        ctx.drawImage(ballImage, this.ball.hitbox.maxRange.x[0], this.ball.hitbox.maxRange.y[0])
     }
 
     drawHitboxes(hitboxes: Hitbox.Map, keepColor = false) {

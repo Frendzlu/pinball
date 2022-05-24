@@ -110,11 +110,11 @@ export namespace Hitbox {
         constructor(p: Geometry.Point, rotation: number, hitboxes: MapJsonConstruct) {
             this.anchorPoint = p
             this.allowedRotation = rotation
-            this.hitboxes = processHitboxes(hitboxes)
+            this.hitboxes = process(hitboxes)
         }
     }
 
-    export function processHitboxes (hitboxes: MapJsonConstruct) {
+    export function process (hitboxes: MapJsonConstruct) {
         let processedHitboxes: Map = new EmptyDefinition().hitboxes
         for (let hitbox of hitboxes.linear || []) {
             processedHitboxes.linear.push(new Linear(hitbox.a, hitbox.b, hitbox.condition, hitbox.options))

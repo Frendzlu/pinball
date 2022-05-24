@@ -39,6 +39,7 @@ export default class SixteenSegmentDisplay extends Renderer {
         super(parentElementID, id, parsedOptions)
         this.options = parsedOptions
         this.calculateRectangles()
+        this.clearText()
     }
 
     calculateRectangles() {
@@ -96,7 +97,7 @@ export default class SixteenSegmentDisplay extends Renderer {
         console.log(this.initialValues)
     }
 
-    renderText(text: string, shouldClear: boolean = false) {
+    renderText(text: string, shouldClear: boolean = true) {
         if (shouldClear) this.clearText()
         let ctx = this.htmlElement.getContext('2d')!
         ctx.fillStyle = colors.display.on
@@ -117,7 +118,6 @@ export default class SixteenSegmentDisplay extends Renderer {
         let ctx = this.htmlElement.getContext('2d')!
         ctx.fillStyle = "black"
         ctx.fillRect(0, 0, this.options.width, this.options.height)
-        console.log(Envs.preferredDarkMode)
         ctx.fillStyle = Envs.preferredDarkMode ? "black" : colors.display.off
         for(let beam of this.initialValues) {
             for (let beamPart of beam) {

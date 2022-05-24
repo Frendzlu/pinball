@@ -1,23 +1,11 @@
 import "./style.css"
-import SixteenSegmentDisplay from "./SixteenSegmentDisplay/SixteenSegmentDisplay";
-import {GameArea} from "./GameArea/GameArea";
 import {Envs} from "./envs";
-import {KeyListener} from "./KeyListener";
+import {Events} from "./events";
+import {Game} from "./Game";
 
-let display = new SixteenSegmentDisplay("display", "test")
-display.clearText()
-display.renderText("!%*()-_=+\\|{}[]'\"`.,?/")
-
-let x = new GameArea("ga", "gac")
-Envs.debugMode = true
+Envs.debugMode = false
 Envs.preferredDarkMode = true
-Envs.showBounceChecks = true
-var envs = Envs
-console.log(envs)
-display.clearText()
-display.renderText("Player 1ś")
-x.render()
+Envs.showBounceChecks = false
 
-let listener = new KeyListener()
-
-console.log(listener.keyBinds)
+let game = new Game()
+Events.outOfBounds.push(()=>{game.onLost()})
