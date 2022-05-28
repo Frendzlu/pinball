@@ -8,9 +8,9 @@ export interface Keybind {
 	shift: boolean
 
 	associatedEvent: () => void
-	repeatable: false | {
-		interval: number
-	}
+	repeatable: boolean
+
+	onUp: () => void
 }
 
 export class KeyListener {
@@ -28,13 +28,15 @@ export class KeyListener {
 		}
 		document.body.onkeyup = () => {
 			if (this.currentEvent.interval) clearInterval(this.currentEvent.interval)
+			let current = this.keyBinds.find(bind => bind.id == this.currentEvent.id)
+			if (current) current.onUp()
 			this.currentEvent.id = -1
 			this.currentEvent.interval = undefined
 		}
 	}
 
 	narrowSearch(e: KeyboardEvent) {
-		console.log(e.key, e.metaKey, e.altKey, e.ctrlKey, e.shiftKey)
+		//console.log(e.key, e.metaKey, e.altKey, e.ctrlKey, e.shiftKey)
 		let found = this.keyBinds.find(bind =>
 			bind.key == e.key &&
 			bind.meta == e.metaKey &&
@@ -47,16 +49,18 @@ export class KeyListener {
 				found.associatedEvent()
 				this.currentEvent.id = found.id
 			}
-			if (found.repeatable) {
+			if (found.repeatable && this.currentEvent.interval == undefined) {
 				this.currentEvent.interval = setInterval(() => {
 					found!.associatedEvent()
-				}, found.repeatable.interval)
+				}, 1)
 			}
 		}
 	}
 
-	add(path: string, e: () => void, repeat: boolean | number = false) {
+	add(path: string, e?: () => void, repeat: boolean = false, onKeyUp?: () => void) {
 		let generalMatch = path.toLowerCase().match(/^((?:shift|alt|ctrl|meta|\+|\s)*)(.*)$/i)
+		e = e || (() => console.log(`You have pressed key: ${path}`))
+		onKeyUp = onKeyUp || (() => console.log(`You have unpressed key: ${path}`))
 		if (!generalMatch) {
 			console.error("Failed to register key:", path)
 			return
@@ -71,9 +75,9 @@ export class KeyListener {
 			shift: actionKeys ? actionKeys.includes("shift") : false,
 
 			associatedEvent: e,
-			repeatable: repeat ? {
-				interval: repeat as number
-			} : false
+			repeatable: repeat,
+			onUp: onKeyUp
 		})
+		this.currentId += 1
 	}
 }

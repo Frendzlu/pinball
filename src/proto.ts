@@ -1,5 +1,6 @@
-export {}
+import {Json} from "./types";
 
+export {}
 
 interface IElementCreationOptions extends ElementCreationOptions {
     className?: string
@@ -20,6 +21,10 @@ declare global{
 
     interface HTMLElement {
         appendTo(element: HTMLElement): this
+    }
+
+    interface Object {
+        copy<K extends Object>(x: K) : K
     }
 }
 
@@ -47,3 +52,23 @@ document.createElement = function (original: <K extends keyof HTMLElementTagName
         return el
     }
 }(document.createElement)
+
+Object.prototype.copy = function<K extends Object>(toBeCopied: K) {
+    let state: Json<any> = JSON.parse(JSON.stringify(toBeCopied))
+    let functions: Json<any> = {}
+    let currentPrototype = toBeCopied
+    do {
+        let existingPropNames = Object.keys(functions)
+        Object.getOwnPropertyNames(currentPrototype).forEach(propName => {
+            let debatedProperty = (currentPrototype as Json<any>)[propName]
+            if (!existingPropNames.includes(propName) && typeof debatedProperty == 'function') {
+                functions[propName] = debatedProperty
+            }
+        })
+    } while (currentPrototype = Object.getPrototypeOf(currentPrototype));
+    Object.entries(functions).forEach(entry => {
+        state[entry[0]] = entry[1]
+    })
+    return state as K
+}
+export {}

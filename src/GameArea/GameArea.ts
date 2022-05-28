@@ -30,6 +30,10 @@ export class GameArea extends Renderer {
         }, Envs.drawingTimeout)
     }
 
+    getNamedHitbox(name: string) {
+        return this.hitboxDefinition.hitboxes.rotatable.find(hitbox => hitbox.name == name)
+    }
+
     render() {
         let ctx = this.htmlElement.getContext('2d')!
         let image = document.getElementById("mainImg") as HTMLImageElement

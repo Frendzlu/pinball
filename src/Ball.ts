@@ -38,13 +38,11 @@ export class Ball {
         //console.log(Vector.from(this.speed, this.angle))
         let change = Vector.add(Vector.from(this.speed, this.angle), GRAVITY_VECTOR)
         //console.log("Change:", change)
-        this.hitbox.s.x += change.x
-        this.hitbox.s.y += change.y
         let velocity = Vector.toVelocity(change)
         //console.log("Velocity:", velocity)
         this.angle = velocity.angle
         this.speed = velocity.speed
-        this.hitbox = new Hitbox.Circular(this.hitbox.s, this.hitbox.r)
+        this.hitbox = new Hitbox.Circular(new Point(this.hitbox.s.x + change.x, this.hitbox.s.y + change.y), this.hitbox.r)
 
         if (this.hitbox.maxRange.y[0] > this.options.height ||
             this.hitbox.maxRange.y[1] < 0 ||

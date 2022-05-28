@@ -1,13 +1,58 @@
 export namespace Geometry {
-    export interface Point {
+    export interface IPoint {
         x: number,
         y: number
     }
 
-    export class Point implements Point {
-        constructor(x: number = 0, y: number = 0) {
-            this.x = x
-            this.y = y
+    export class Point implements IPoint {
+        x: number
+        y: number
+
+        constructor(x: number, y: number)
+        constructor(point: IPoint)
+        constructor(...args: any) {
+            if (!args.length) {
+                this.x = 0
+                this.y = 0
+            } else if (typeof args[0] == "number") {
+                this.x = args[0]
+                this.y = args[1] || 0
+            } else {
+                this.x = args[0].x
+                this.y = args[0].y
+            }
+        }
+
+        relativeTo(point: Point) {
+            return new Point(this.x - point.x , this.y - point.y)
+        }
+
+        rotate(angle: number) {
+            let θ = d2r(angle)
+            this.x = (this.x * Math.cos(θ) - this.y * Math.sin(θ))
+            this.y = (this.x * Math.sin(θ) + this.y * Math.cos(θ))
+            return this
+        }
+
+        rotateAlong(angle: number, anchor: Point) {
+            //console.group("Point")
+           // console.log("point:", this)
+            //console.log("anchor:", anchor)
+            let relativePoint = this.relativeTo(anchor)
+            //console.log("relative:",relativePoint)
+            //console.log("angle:", angle)
+            let currentAngle = 0
+            for (let i = 0; i < Math.abs(angle) / 0.1; i++){
+                let toRotate = (angle / Math.abs(angle)) * 0.1
+                relativePoint.rotate(toRotate)
+                currentAngle += toRotate
+            }
+            relativePoint.rotate(angle - currentAngle)
+            //console.log("rotated:",relativePoint)
+            relativePoint.x += anchor.x
+            relativePoint.y += anchor.y
+            //console.groupEnd()
+            return relativePoint
         }
     }
 

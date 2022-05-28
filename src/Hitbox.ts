@@ -2,8 +2,6 @@ import {Geometry} from "./Geometry";
 import {CollisionConditions} from "./Collisions";
 
 export namespace Hitbox {
-    import Point = Geometry.Point;
-
     export interface Map {
         circular: Circular[],
         linear: Linear[],
@@ -85,48 +83,74 @@ export namespace Hitbox {
 
     type MapJsonConstruct = {
         linear?: {
-            a: Point
-            b: Point
+            a: Geometry.IPoint
+            b: Geometry.IPoint
             condition: CollisionConditions
             options?: Options
         }[]
         circular?: {
-            s: Point
+            s: Geometry.IPoint
             r: number
             options?: Options
         }[]
         rotatable?: {
-            anchorPoint: Geometry.Point,
+            anchorPoint: Geometry.IPoint,
             allowedRotation: number,
-            hitboxes: MapJsonConstruct
+            hitboxes: MapJsonConstruct,
+            name: string
         } []
     }
 
     export class Rotatable {
         anchorPoint: Geometry.Point
         allowedRotation: number
+        currentRotation: number = 0
+        minimalRotation: number = 0
         hitboxes: Map
+        name: string = ""
+        initialHitboxes: MapJsonConstruct
 
-        constructor(p: Geometry.Point, rotation: number, hitboxes: MapJsonConstruct) {
+        constructor(p: Geometry.Point, rotation: number, hitboxes: MapJsonConstruct, name: string) {
             this.anchorPoint = p
             this.allowedRotation = rotation
+            this.name = name
             this.hitboxes = process(hitboxes)
+            this.initialHitboxes = hitboxes
+        }
+
+        rotate(degrees: number) {
+            let hitboxes = process(this.initialHitboxes)
+            //console.log(this.currentRotation, this.allowedRotation)
+            this.currentRotation += degrees
+            if (Math.abs(this.currentRotation) > Math.abs(this.allowedRotation)) this.currentRotation = this.allowedRotation
+            for (let hitbox of hitboxes.linear) {
+                hitbox.line = new Hitbox.Segment(hitbox.line.A.rotateAlong(this.currentRotation, this.anchorPoint), hitbox.line.B.rotateAlong(this.currentRotation, this.anchorPoint))
+            }
+            for (let hitbox of hitboxes.circular) {
+                hitbox.s = hitbox.s.rotateAlong(this.currentRotation, this.anchorPoint)
+            }
+            //@to-do: implement rotatable
+            //console.group("Invocation info")
+            //console.log("Angle:", degrees)
+            //console.log("Current rotation:", this.currentRotation)
+            //console.groupEnd()
+            this.hitboxes = hitboxes
         }
     }
 
     export function process (hitboxes: MapJsonConstruct) {
         let processedHitboxes: Map = new EmptyDefinition().hitboxes
         for (let hitbox of hitboxes.linear || []) {
-            processedHitboxes.linear.push(new Linear(hitbox.a, hitbox.b, hitbox.condition, hitbox.options))
+            processedHitboxes.linear.push(new Linear(new Geometry.Point(hitbox.a), new Geometry.Point(hitbox.b), hitbox.condition, hitbox.options))
         }
 
         processedHitboxes.circular = []
         for (let hitbox of hitboxes.circular || []) {
-            processedHitboxes.circular.push(new Circular(hitbox.s, hitbox.r, hitbox.options))
+            processedHitboxes.circular.push(new Circular(new Geometry.Point(hitbox.s), hitbox.r, hitbox.options))
         }
 
         for (let hitbox of hitboxes.rotatable || []) {
-            processedHitboxes.rotatable.push(new Rotatable(hitbox.anchorPoint, hitbox.allowedRotation, hitbox.hitboxes))
+            processedHitboxes.rotatable.push(new Rotatable(new Geometry.Point(hitbox.anchorPoint), hitbox.allowedRotation, hitbox.hitboxes, hitbox.name))
         }
         return processedHitboxes
     }

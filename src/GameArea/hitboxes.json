@@ -1649,6 +1649,7 @@
     ],
     "rotatable" : [
       {
+        "name": "paletteLeft",
         "anchorPoint": {
           "x": 536,
           "y": 2605
@@ -1698,6 +1699,7 @@
         }
       },
       {
+        "name": "paletteRight",
         "anchorPoint": {
           "x": 1206,
           "y": 2605
