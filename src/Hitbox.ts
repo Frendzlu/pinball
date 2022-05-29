@@ -2,6 +2,8 @@ import {Geometry} from "./Geometry";
 import {CollisionConditions} from "./Collisions";
 
 export namespace Hitbox {
+    import Line = Geometry.Line;
+
     export interface Map {
         circular: Circular[],
         linear: Linear[],
@@ -120,7 +122,7 @@ export namespace Hitbox {
 
         rotate(degrees: number) {
             let hitboxes = process(this.initialHitboxes)
-            //console.log(this.currentRotation, this.allowedRotation)
+            console.log(this.currentRotation, this.allowedRotation)
             this.currentRotation += degrees
             if (Math.abs(this.currentRotation) > Math.abs(this.allowedRotation)) this.currentRotation = this.allowedRotation
             for (let hitbox of hitboxes.linear) {
@@ -153,5 +155,28 @@ export namespace Hitbox {
             processedHitboxes.rotatable.push(new Rotatable(new Geometry.Point(hitbox.anchorPoint), hitbox.allowedRotation, hitbox.hitboxes, hitbox.name))
         }
         return processedHitboxes
+    }
+
+    export function consideredCollisions(map: Map, range: { x: [number, number]; y: [number, number] }) {
+        let toBeReturned: (Circular | Linear)[] = []
+        console.log(range)
+        for (let hitbox of map.linear) {
+            if (hitbox.line.yRange[0] > range.y[1] ||
+                hitbox.line.yRange[1] < range.y[0] ||
+                hitbox.line.xRange[0] > range.x[1] ||
+                hitbox.line.xRange[1] < range.x[0]) {
+            } else toBeReturned.push(hitbox)
+        }
+        for (let hitbox of map.circular) {
+            if (hitbox.maxRange.y[0] > range.y[1] ||
+                hitbox.maxRange.y[1] < range.y[0] ||
+                hitbox.maxRange.x[0] > range.x[1] ||
+                hitbox.maxRange.x[1] < range.x[0]) {
+            } else toBeReturned.push(hitbox)
+        }
+        for (let hitbox of map.rotatable) {
+            toBeReturned.push(...consideredCollisions(hitbox.hitboxes, range))
+        }
+        return toBeReturned
     }
 }

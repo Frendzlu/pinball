@@ -36,7 +36,7 @@ export namespace Geometry {
 
         rotateAlong(angle: number, anchor: Point) {
             //console.group("Point")
-           // console.log("point:", this)
+            //console.log("point:", this)
             //console.log("anchor:", anchor)
             let relativePoint = this.relativeTo(anchor)
             //console.log("relative:",relativePoint)

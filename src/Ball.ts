@@ -21,7 +21,7 @@ export class Ball {
     angle: number
     speed: number
     options: CanvasOptions
-    interval: number
+    interval?: number
 
     constructor(options: CanvasOptions) {
         //let image = document.getElementById("ball") as HTMLImageElement
@@ -29,9 +29,9 @@ export class Ball {
         this.angle = -100
         this.speed = 25
         this.options = options
-        this.interval = setInterval(() => {
-            this.move()
-        }, Envs.calculationTimeout)
+        // this.interval = setInterval(() => {
+        //     this.move()
+        // }, Envs.calculationTimeout)
     }
 
     move() {
@@ -49,7 +49,7 @@ export class Ball {
             this.hitbox.maxRange.x[0] > this.options.width ||
             this.hitbox.maxRange.x[1] < 0
         ) {
-            clearInterval(this.interval)
+            if (this.interval) clearInterval(this.interval)
             Events.outOfBounds.forEach(handle => handle())
         }
     }

@@ -13,47 +13,64 @@ export interface Keybind {
 	onUp: () => void
 }
 
+interface CurrentEvent {
+	id: number
+	key: string
+	onUp: () => void
+	interval?: number
+}
+
 export class KeyListener {
 	keyBinds: Keybind[] = []
-	currentEvent: {
-		id: number
-		interval?: number
-	}
+	currentEvents: CurrentEvent[]
 	currentId = 1
 
 	constructor() {
 		document.body.onkeydown = (e) => {this.narrowSearch(e)}
-		this.currentEvent = {
-			id: -1
-		}
-		document.body.onkeyup = () => {
-			if (this.currentEvent.interval) clearInterval(this.currentEvent.interval)
-			let current = this.keyBinds.find(bind => bind.id == this.currentEvent.id)
-			if (current) current.onUp()
-			this.currentEvent.id = -1
-			this.currentEvent.interval = undefined
+		this.currentEvents = []
+		document.body.onkeyup = (e) => {
+			//console.log(this.currentEvents)
+			let related = this.currentEvents.find(event => event.key.toLowerCase() == e.key.toLowerCase())
+			//console.log(related)
+			if (related) {
+				related.onUp()
+				if (related.interval) clearInterval(related.interval)
+				this.currentEvents.splice(this.currentEvents.indexOf(related!), 1)
+			}
+			this.currentEvents.indexOf(related!)
 		}
 	}
 
 	narrowSearch(e: KeyboardEvent) {
 		//console.log(e.key, e.metaKey, e.altKey, e.ctrlKey, e.shiftKey)
 		let found = this.keyBinds.find(bind =>
-			bind.key == e.key &&
+			bind.key.toLowerCase() == e.key.toLowerCase() &&
 			bind.meta == e.metaKey &&
 			bind.alt == e.altKey &&
 			bind.ctrl == e.ctrlKey &&
 			bind.shift == e.shiftKey
 		)
 		if (found) {
-			if (this.currentEvent.id != found.id) {
+			let searched = this.currentEvents.find(event => event.id == found!.id)
+			let toPush: CurrentEvent = {
+				id: -1,
+				key: "sus",
+				onUp: () => {console.log("amogus")}
+			}
+			if (!searched) {
+				//console.log("First time", e.key)
 				found.associatedEvent()
-				this.currentEvent.id = found.id
+				toPush.key = e.key
+				toPush.id = found.id
+				toPush.onUp = found.onUp
+				if (found.repeatable) {
+					toPush.interval = setInterval(() => {
+						found!.associatedEvent()
+					}, 10)
+				}
+
 			}
-			if (found.repeatable && this.currentEvent.interval == undefined) {
-				this.currentEvent.interval = setInterval(() => {
-					found!.associatedEvent()
-				}, 1)
-			}
+			if (toPush.id != -1) this.currentEvents.push(toPush)
 		}
 	}
 
@@ -68,7 +85,7 @@ export class KeyListener {
 		let actionKeys = generalMatch[1].match(/shift|alt|ctrl|meta/ig)
 		this.keyBinds.push({
 			id: this.currentId,
-			key: generalMatch[2],
+			key: generalMatch[2] || " ",
 			alt: actionKeys ? actionKeys.includes("alt") : false,
 			ctrl: actionKeys ? actionKeys.includes("ctrl") : false,
 			meta: actionKeys ? actionKeys.includes("meta") : false,

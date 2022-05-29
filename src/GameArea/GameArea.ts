@@ -1,6 +1,6 @@
 import {CanvasOptions, Renderer} from "../Renderer";
 import hitboxDefinitions from "./hitboxes.json"
-import {Hitbox} from "../Hitbox";
+import {Circular, Hitbox, Linear} from "../Hitbox";
 import colors from "../../data/colors.json";
 import {Envs} from "../envs";
 import {Ball} from "../Ball";
@@ -15,6 +15,7 @@ export class GameArea extends Renderer {
     hitboxDefinition: Hitbox.Definition
     options: CanvasOptions
     ball: Ball
+    scheduledEvents: {[key: string]: ()=>void }
 
     constructor(parentElementID: string, id: string, options: CanvasOptions = defaultOptions) {
         super(parentElementID, id, options);
@@ -22,7 +23,7 @@ export class GameArea extends Renderer {
         this.hitboxDefinition = new Hitbox.EmptyDefinition()
         this.hitboxDefinition.defaultDims = hitboxDefinitions.defaultDims
         this.hitboxDefinition.hitboxes = Hitbox.process(hitboxDefinitions.hitboxes)
-
+        this.scheduledEvents = {}
         this.ball = new Ball(options)
 
         setInterval(() => {
@@ -55,9 +56,20 @@ export class GameArea extends Renderer {
             let v = Geometry.Vector.from(this.ball.speed, this.ball.angle)
             ctx.lineTo(this.ball.hitbox.s.x + v.x * 25, this.ball.hitbox.s.y + v.y * 25)
             ctx.stroke()
+            ctx.beginPath()
+            ctx.strokeStyle = "rgb(240, 140, 140)"
+            ctx.moveTo(this.ball.hitbox.maxRange.x[0], this.ball.hitbox.maxRange.y[0])
+            ctx.lineTo(this.ball.hitbox.maxRange.x[1], this.ball.hitbox.maxRange.y[0])
+            ctx.lineTo(this.ball.hitbox.maxRange.x[1], this.ball.hitbox.maxRange.y[1])
+            ctx.lineTo(this.ball.hitbox.maxRange.x[0], this.ball.hitbox.maxRange.y[1])
+            ctx.lineTo(this.ball.hitbox.maxRange.x[0], this.ball.hitbox.maxRange.y[0])
+            ctx.stroke()
         }
         let ballImage = document.getElementById("ball") as HTMLImageElement
         ctx.drawImage(ballImage, this.ball.hitbox.maxRange.x[0], this.ball.hitbox.maxRange.y[0])
+        for (let fn of Object.values(this.scheduledEvents)) {
+            fn()
+        }
     }
 
     drawHitboxes(hitboxes: Hitbox.Map, keepColor = false) {
@@ -103,6 +115,30 @@ export class GameArea extends Renderer {
             this.drawHitboxes(hitbox.hitboxes, true)
         }
         ctx.stroke()
+    }
+
+    drawHitboxRanges(hitboxes: (Circular | Linear)[]) {
+        let ctx = this.htmlElement.getContext('2d')!
+        for (let hitbox of hitboxes) {
+            ctx.beginPath()
+            ctx.strokeStyle = "rgb(255, 23, 255)"
+            let yr: [number, number] = [0, 0]
+            let xr: [number, number] = [0, 0]
+            if (hitbox instanceof Hitbox.Circular) {
+                yr = hitbox.maxRange.y
+                xr = hitbox.maxRange.x
+            } else if (hitbox instanceof Hitbox.Linear) {
+                yr = hitbox.line.yRange
+                xr = hitbox.line.xRange
+            }
+            //console.log(xr, yr)
+            ctx.moveTo(xr[0], yr[0])
+            ctx.lineTo(xr[1], yr[0])
+            ctx.lineTo(xr[1], yr[1])
+            ctx.lineTo(xr[0], yr[1])
+            ctx.lineTo(xr[0], yr[0])
+            ctx.stroke()
+        }
     }
 
     private drawBounceChecks(hitbox: Hitbox.Linear) {
