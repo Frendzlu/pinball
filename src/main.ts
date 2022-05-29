@@ -11,6 +11,7 @@ let rotatingLeft = false
 let rotatingRight = false
 let game = new Game()
 let keyRegister = new KeyListener()
+
 keyRegister.add("Z", ()=> {
 	rotatingLeft = true
 	game.paletteLeft.rotate(-4)
@@ -28,6 +29,7 @@ keyRegister.add("Z", ()=> {
 		}
 	},1)
 })
+
 keyRegister.add("M", ()=> {
 	rotatingRight = true
 	game.paletteRight.rotate(4)
@@ -45,15 +47,16 @@ keyRegister.add("M", ()=> {
 		}
 	},1)
 })
+
 keyRegister.add("ArrowRight", ()=> {
 	game.gameArea.ball.move()
-	game.checkHitboxes()
 })
+
 keyRegister.add("Shift+ArrowRight", ()=> {
 	game.gameArea.ball.move()
-	game.checkHitboxes()
 },true)
 let momentum = 0
+
 keyRegister.add(" ", ()=> {
 	momentum += 1
 }, true, () => {

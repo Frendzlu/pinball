@@ -1,12 +1,12 @@
 import {CanvasOptions, Renderer} from "../Renderer";
 import hitboxDefinitions from "./hitboxes.json"
-import {Circular, Hitbox, Linear} from "../Hitbox";
+import {Hitbox} from "../Hitbox";
 import colors from "../../data/colors.json";
 import {Envs} from "../envs";
 import {Ball} from "../Ball";
 import {Geometry} from "../Geometry";
 
-const defaultOptions: CanvasOptions = {
+export const defaultOptions: CanvasOptions = {
     width: 1920,
     height: 2900
 }
@@ -17,18 +17,19 @@ export class GameArea extends Renderer {
     ball: Ball
     scheduledEvents: {[key: string]: ()=>void }
 
-    constructor(parentElementID: string, id: string, options: CanvasOptions = defaultOptions) {
+    constructor(parentElementID: string, id: string, options: CanvasOptions = defaultOptions, ball: Ball) {
         super(parentElementID, id, options);
         this.options = options
         this.hitboxDefinition = new Hitbox.EmptyDefinition()
         this.hitboxDefinition.defaultDims = hitboxDefinitions.defaultDims
         this.hitboxDefinition.hitboxes = Hitbox.process(hitboxDefinitions.hitboxes)
         this.scheduledEvents = {}
-        this.ball = new Ball(options)
+        this.ball = ball
 
-        setInterval(() => {
-            this.render()
-        }, Envs.drawingTimeout)
+        this.render()
+        // setInterval(() => {
+        //     this.render()
+        // }, Envs.drawingTimeout)
     }
 
     getNamedHitbox(name: string) {
@@ -49,6 +50,10 @@ export class GameArea extends Renderer {
             ctx.drawImage(image,0,0);
             ctx.globalCompositeOperation = "source-over"
         } else ctx.drawImage(image, 0, 0)
+        let ballImage = document.getElementById("ball") as HTMLImageElement
+        let hbox = this.ball.hitbox
+        let range = hbox.maxRange
+        ctx.drawImage(ballImage, range.x[0], range.y[0])
         if (Envs.debugMode) {
             this.drawHitboxes(this.hitboxDefinition.hitboxes)
             ctx.arc(this.ball.hitbox.s.x, this.ball.hitbox.s.y, this.ball.hitbox.r, 0, 2 * Math.PI)
@@ -65,8 +70,6 @@ export class GameArea extends Renderer {
             ctx.lineTo(this.ball.hitbox.maxRange.x[0], this.ball.hitbox.maxRange.y[0])
             ctx.stroke()
         }
-        let ballImage = document.getElementById("ball") as HTMLImageElement
-        ctx.drawImage(ballImage, this.ball.hitbox.maxRange.x[0], this.ball.hitbox.maxRange.y[0])
         for (let fn of Object.values(this.scheduledEvents)) {
             fn()
         }
@@ -117,7 +120,7 @@ export class GameArea extends Renderer {
         ctx.stroke()
     }
 
-    drawHitboxRanges(hitboxes: (Circular | Linear)[]) {
+    drawHitboxRanges(hitboxes: (Hitbox.Circular | Hitbox.Linear)[]) {
         let ctx = this.htmlElement.getContext('2d')!
         for (let hitbox of hitboxes) {
             ctx.beginPath()
@@ -127,7 +130,7 @@ export class GameArea extends Renderer {
             if (hitbox instanceof Hitbox.Circular) {
                 yr = hitbox.maxRange.y
                 xr = hitbox.maxRange.x
-            } else if (hitbox instanceof Hitbox.Linear) {
+            } else {
                 yr = hitbox.line.yRange
                 xr = hitbox.line.xRange
             }

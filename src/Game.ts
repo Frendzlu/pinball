@@ -1,7 +1,8 @@
 import SixteenSegmentDisplay from "./SixteenSegmentDisplay/SixteenSegmentDisplay";
-import {GameArea} from "./GameArea/GameArea";
+import {defaultOptions, GameArea} from "./GameArea/GameArea";
 import {Hitbox} from "./Hitbox";
 import {Envs} from "./envs";
+import {Ball} from "./Ball";
 
 export class Game {
 	display: SixteenSegmentDisplay
@@ -13,7 +14,7 @@ export class Game {
 		this.display = new SixteenSegmentDisplay("display", "test")
 		this.display.renderText("Player 1!")
 
-		this.gameArea = new GameArea("ga", "gac")
+		this.gameArea = new GameArea("ga", "gac", defaultOptions, new Ball(defaultOptions, this))
 		this.paletteLeft = this.gameArea.getNamedHitbox("paletteLeft")!
 		this.paletteRight = this.gameArea.getNamedHitbox("paletteRight")!
 	}
@@ -24,9 +25,10 @@ export class Game {
 
 	checkHitboxes() {
 		let foundHitboxes = Hitbox.consideredCollisions(this.gameArea.hitboxDefinition.hitboxes, this.gameArea.ball.hitbox.maxRange)
-		console.log(foundHitboxes)
+		//console.log(foundHitboxes)
 		if (Envs.debugMode) {
 			this.gameArea.scheduledEvents["hitboxDebug"] = () => {this.gameArea.drawHitboxRanges(foundHitboxes)}
 		}
+		return foundHitboxes
 	}
 }

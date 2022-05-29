@@ -59,10 +59,18 @@ export namespace Geometry {
     export class Line {
         A: Point
         B: Point
+        coeffA: number
+        coeffB: number
 
         constructor(a: Point, b: Point) {
             this.A = a
             this.B = b
+            this.coeffA = (a.y - b.y) / (a.x - b.x)
+            this.coeffB = a.y - a.x * this.coeffA
+        }
+
+        evalEquation(x: number) {
+            return x * this.coeffA + this.coeffB
         }
     }
 
@@ -95,33 +103,39 @@ export namespace Geometry {
         return degrees * Math.PI / 180
     }
 
-    export type Vector = {
+    export interface IVector {
         x: number
         y: number
     }
 
-    export namespace Vector {
-        export function from(length: number, angle: number): Vector {
+    export class Vector implements IVector {
+        x: number
+        y: number
+
+        constructor(x: number = 0, y: number = 0) {
+            this.x = x
+            this.y = y
+        }
+
+        static from(length: number, angle: number): Vector {
+            return new Vector(Math.cos(d2r(angle)) * length, Math.sin(d2r(angle)) * length)
+        }
+
+        static add(v1: Vector, v2: Vector): Vector {
+            return new Vector(v1.x + v2.x,  v1.y + v2.y)
+        }
+
+        toVelocity() {
+            let vM = this.y < 0 ? 1 : -1
+            let hM = this.x < 0 ? 180 : 0
             return {
-                x: Math.cos(d2r(angle)) * length,
-                y: Math.sin(d2r(angle)) * length
+                speed: Math.sqrt(this.x ** 2 + this.y ** 2),
+                angle: (hM * vM) - r2d(Math.atan((-this.y) / this.x))
             }
         }
 
-        export function add(v1: Vector, v2: Vector): Vector {
-            return {
-                x: v1.x + v2.x,
-                y: v1.y + v2.y
-            }
-        }
-
-        export function toVelocity(v: Vector){
-            let vM = v.y < 0 ? 1 : -1
-            let hM = v.x < 0 ? 180 : 0
-            return {
-                speed: Math.sqrt(v.x ** 2 + v.y ** 2),
-                angle: (hM * vM) - r2d(Math.atan((-v.y) / v.x))
-            }
+        multiply(num: number): Vector {
+            return new Vector(this.x * num, this.y * num)
         }
     }
 }
