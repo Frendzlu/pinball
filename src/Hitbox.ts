@@ -74,6 +74,12 @@ export namespace Hitbox {
 		checkCondition(_p: Point) {
 			return true
 		}
+
+		checkCollision(ball: Circular) {
+			let dist = ball.s.distanceFrom(this.s)
+			console.log("Distance:", dist, "this radius:", this.r, "ball radius:", ball.r)
+			return dist <= this.r + ball.r
+		}
 	}
 
 	export class Linear {
@@ -105,6 +111,14 @@ export namespace Hitbox {
 					console.log(point.y > this.line.evalEquation(point.x))
 					return point.y > this.line.evalEquation(point.x)
 			}
+		}
+
+		checkCollision(ball: Circular) {
+			console.log("Line:", this.line)
+			console.log("Ball pos:", ball.s)
+			let dist = ball.s.distanceFrom(this.line)
+			console.log("Distance:", dist, "ball radius:", ball.r)
+			return dist <= ball.r
 		}
 	}
 

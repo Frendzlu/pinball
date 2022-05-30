@@ -1,3 +1,5 @@
+import { Hitbox } from "./Hitbox"
+
 export namespace Geometry {
     export interface IPoint {
         x: number,
@@ -23,7 +25,7 @@ export namespace Geometry {
             }
         }
 
-        relativeTo(point: Point) {
+        relativeTo(point: IPoint) {
             return new Point(this.x - point.x , this.y - point.y)
         }
 
@@ -34,7 +36,7 @@ export namespace Geometry {
             return this
         }
 
-        rotateAlong(angle: number, anchor: Point) {
+        rotateAlong(angle: number, anchor: IPoint) {
             //console.group("Point")
             //console.log("point:", this)
             //console.log("anchor:", anchor)
@@ -53,6 +55,13 @@ export namespace Geometry {
             relativePoint.y += anchor.y
             //console.groupEnd()
             return relativePoint
+        }
+
+        distanceFrom(point: IPoint): number
+        distanceFrom(line: Line): number
+        distanceFrom(target: IPoint | Line) {
+            if (target instanceof Line) return Math.abs(target.coeffA * this.x + this.y - target.coeffB) / Math.sqrt(target.coeffA**2 + 1)
+            else return Math.sqrt((this.x - target.x) ** 2 + (this.y - target.y) ** 2)
         }
     }
 
@@ -83,7 +92,7 @@ export namespace Geometry {
             super(a, b)
             this.yRange = [a.y, b.y].sort((a, b) => a - b) as [number, number]
             this.xRange = [a.x, b.x].sort((a, b) => a - b) as [number, number]
-            this.length = Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2)
+            this.length = a.distanceFrom(b)
         }
     }
 
@@ -136,6 +145,14 @@ export namespace Geometry {
 
         multiply(num: number): Vector {
             return new Vector(this.x * num, this.y * num)
+        }
+
+        deflectionAngleWith(target: Line | Hitbox.Circular) {
+            let velocity = this.toVelocity()
+            // 180 = kąt prostej l + 90 + alfa
+            // 180 alfa + 90 - kąt wektoru piłki + kąt odbicia
+            // beta(prostopadła do l, linia pozioma) = 180 - kąt prostej l - 90
+            // 90 - kąt odbicia + beta + kąt końcowy = 180 
         }
     }
 }

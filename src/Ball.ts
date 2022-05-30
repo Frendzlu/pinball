@@ -24,8 +24,8 @@ export class Ball {
     constructor(options: CanvasOptions, objRef: Game) {
         //let image = document.getElementById("ball") as HTMLImageElement
         this.hitbox = new Hitbox.Circular(...startingData)
-        this.angle = -100
-        this.speed = 100
+        this.angle = -90
+        this.speed = 4
         this.options = options
         this.game = objRef
         // this.interval = setInterval(() => {
@@ -38,22 +38,23 @@ export class Ball {
         //console.log("Desired:", normalChange.speed, normalChange.angle)
         //console.log(Vector.from(this.speed, this.angle))
         let approx = Math.floor(this.speed)
-        let mod = this.speed ? 1/this.speed : 1
+        let mod = this.speed >= 1 ? 1/this.speed : 1 
         const initialSpeed = this.speed
-        //console.log("Approx:", approx)
-        //console.log("Gravity:", GRAVITY_VECTOR.multiply(mod))
-        //console.log("From:", Geometry.Vector.from(this.speed * mod, this.angle))
-        //console.log("Added:", Geometry.Vector.add(Geometry.Vector.from(this.speed * mod, this.angle), GRAVITY_VECTOR.multiply(mod)))
-        //console.log("After change:", Geometry.Vector.add(Geometry.Vector.from(this.speed * mod, this.angle), GRAVITY_VECTOR.multiply(mod)).toVelocity())
+        // console.log("Approx:", approx)
+        // console.log("Gravity:", GRAVITY_VECTOR.multiply(mod))
+        // console.log("From:", Geometry.Vector.from(this.speed * mod, this.angle))
+        // console.log("Added:", Geometry.Vector.add(Geometry.Vector.from(this.speed * mod, this.angle), GRAVITY_VECTOR.multiply(mod)))
+        // console.log("After change:", Geometry.Vector.add(Geometry.Vector.from(this.speed * mod, this.angle), GRAVITY_VECTOR.multiply(mod)).toVelocity())
+        //console.log(this.speed, mod)
         for (let i = 0; i <= approx; i++) {
             //console.log(this.speed, this.angle)
             let change = Geometry.Vector.add(Geometry.Vector.from(this.speed * mod, this.angle), GRAVITY_VECTOR.multiply(mod ** 2))
-            this.handleVelocityChange(change, initialSpeed ? initialSpeed : mod)
+            this.handleVelocityChange(change, initialSpeed >= 1 ? initialSpeed : mod)
             this.checkForEscape()
             let shouldContinue = this.checkCollisions()
             if (!shouldContinue) break
         }
-        console.log(this.speed, this.angle)
+        //console.log(this.speed, this.angle)
     }
 
     checkForEscape() {
@@ -81,7 +82,9 @@ export class Ball {
             console.log("Found hitboxes:", hitboxes)
             let filtered = hitboxes.filter(hitbox => hitbox.checkCondition(this.hitbox.s))
             console.log("Filtered hitboxes:", filtered)
-            return false
+            let collided = filtered.filter(hitbox => hitbox.checkCollision(this.hitbox))
+            console.log("Collided hitboxes:", collided)
+            return collided.length == 0
         }
     }
 }

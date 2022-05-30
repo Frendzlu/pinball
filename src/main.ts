@@ -54,7 +54,7 @@ keyRegister.add("ArrowRight", ()=> {
 
 keyRegister.add("Shift+ArrowRight", ()=> {
 	game.gameArea.ball.move()
-},true)
+}, true)
 let momentum = 0
 
 keyRegister.add(" ", ()=> {
@@ -62,5 +62,4 @@ keyRegister.add(" ", ()=> {
 }, true, () => {
 	console.log(momentum)
 })
-
 Events.outOfBounds.push(()=>{game.onLost()})

@@ -27,9 +27,9 @@ export class GameArea extends Renderer {
         this.ball = ball
 
         this.render()
-        // setInterval(() => {
-        //     this.render()
-        // }, Envs.drawingTimeout)
+        setInterval(() => {
+            this.render()
+        }, Envs.drawingTimeout)
     }
 
     getNamedHitbox(name: string) {
