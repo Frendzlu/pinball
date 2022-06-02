@@ -1,6 +1,4 @@
 import {Json} from "./types";
-import {Geometry} from "./Geometry";
-import Point = Geometry.Point;
 
 export interface CanvasOptions extends Json<number> {
     width: number,

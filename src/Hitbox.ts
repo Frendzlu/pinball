@@ -3,8 +3,6 @@ import {CollisionConditions} from "./Collisions";
 
 export namespace Hitbox {
 
-	import Point = Geometry.Point;
-
 	export interface Map {
 		circular: Circular[],
 		linear: Linear[],
@@ -71,7 +69,7 @@ export namespace Hitbox {
 			if (this.options.shouldBounce === undefined) this.options.shouldBounce = true
 		}
 
-		checkCondition(_p: Point) {
+		checkCondition(_p: Circular) {
 			return true
 		}
 
@@ -90,18 +88,46 @@ export namespace Hitbox {
 		constructor(p1: Geometry.Point, p2: Geometry.Point, condition: CollisionConditions, options: Options = defaultHitboxOptions) {
 			this.line = new Segment(p1, p2)
 			this.condition = condition
+			if (this.line.coeffA == 0) {
+				if (this.condition == CollisionConditions.Below) {
+					this.line.angle = 0
+				} else if (this.condition == CollisionConditions.Above) {
+					this.line.angle = 180
+				}
+			}
+			if (options.shouldBounce == undefined) options.shouldBounce = true
 			this.options = options
 		}
 
-		checkCondition(point: Point): boolean {
-			console.log(this.condition, point)
+		checkCondition(hitbox: Circular): boolean {
+			let point = hitbox.s
+			let radius = hitbox.r
+			console.log("Condition", this.condition)
 			console.log("line:", this.line)
-			console.log(this.line.evalEquation(point.x))
+			console.log("Value from line equation:", this.line.evalEquation(point.x))
 			switch (this.condition) {
 				case CollisionConditions.Left:
+					console.log("Point:", point, "Radius:", radius)
+					console.log(point.y < this.line.yRange[0], point.y > this.line.yRange[1])
+					if (point.y < this.line.yRange[0] || point.y > this.line.yRange[1]) {
+						console.log("Dist A:", point.distanceFrom(this.line.A), "Dist B:", point.distanceFrom(this.line.B))
+						if (point.distanceFrom(this.line.A) < radius || point.distanceFrom(this.line.B) < radius) {
+							return true
+						}
+						return false
+					}
 					console.log(point.x < this.line.xRange[0])
 					return point.x < this.line.xRange[0]
 				case CollisionConditions.Right:
+					console.log("Point:", point, "Radius:", radius)
+					console.log(point.y < this.line.yRange[0], point.y > this.line.yRange[1])
+					if (point.y < this.line.yRange[0] || point.y > this.line.yRange[1]) {
+						console.log("Dist A:", point.distanceFrom(this.line.A), "Dist B:", point.distanceFrom(this.line.B))
+						if (point.distanceFrom(this.line.A) < radius || point.distanceFrom(this.line.B) < radius) {
+							return true
+						}
+						return false
+					}
 					console.log(point.x > this.line.xRange[0])
 					return point.x > this.line.xRange[0]
 				case CollisionConditions.Above:
@@ -114,10 +140,9 @@ export namespace Hitbox {
 		}
 
 		checkCollision(ball: Circular) {
-			console.log("Line:", this.line)
-			console.log("Ball pos:", ball.s)
+			//console.log("Line:", this.line)
+			//console.log("Ball pos:", ball.s)
 			let dist = ball.s.distanceFrom(this.line)
-			console.log("Distance:", dist, "ball radius:", ball.r)
 			return dist <= ball.r
 		}
 	}
@@ -160,8 +185,8 @@ export namespace Hitbox {
 		}
 
 		rotate(degrees: number) {
-			let hitboxes = process(this.initialHitboxes)
-			console.log(this.currentRotation, this.allowedRotation)
+			let hitboxes = process(this.initialHitboxes, this.name)
+			//console.log(this.currentRotation, this.allowedRotation)
 			this.currentRotation += degrees
 			if (Math.abs(this.currentRotation) > Math.abs(this.allowedRotation)) this.currentRotation = this.allowedRotation
 			for (let hitbox of hitboxes.linear) {
@@ -179,14 +204,22 @@ export namespace Hitbox {
 		}
 	}
 
-	export function process (hitboxes: MapJsonConstruct) {
+	export function process (hitboxes: MapJsonConstruct, name?: string) {
 		let processedHitboxes: Map = new EmptyDefinition().hitboxes
 		for (let hitbox of hitboxes.linear || []) {
+			if (name) {
+				if (!hitbox.options) hitbox.options = JSON.parse(JSON.stringify(defaultHitboxOptions))
+				hitbox.options!.eventHandle = name
+			}
 			processedHitboxes.linear.push(new Linear(new Geometry.Point(hitbox.a), new Geometry.Point(hitbox.b), hitbox.condition, hitbox.options))
 		}
 
 		processedHitboxes.circular = []
 		for (let hitbox of hitboxes.circular || []) {
+			if (name) {
+				if (!hitbox.options) hitbox.options = JSON.parse(JSON.stringify(defaultHitboxOptions))
+				hitbox.options!.eventHandle = name
+			}
 			processedHitboxes.circular.push(new Circular(new Geometry.Point(hitbox.s), hitbox.r, hitbox.options))
 		}
 

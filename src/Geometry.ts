@@ -1,4 +1,4 @@
-import { Hitbox } from "./Hitbox"
+import {Hitbox} from "./Hitbox"
 
 export namespace Geometry {
     export interface IPoint {
@@ -60,8 +60,22 @@ export namespace Geometry {
         distanceFrom(point: IPoint): number
         distanceFrom(line: Line): number
         distanceFrom(target: IPoint | Line) {
-            if (target instanceof Line) return Math.abs(target.coeffA * this.x + this.y - target.coeffB) / Math.sqrt(target.coeffA**2 + 1)
-            else return Math.sqrt((this.x - target.x) ** 2 + (this.y - target.y) ** 2)
+            //console.log("coords:", this.x, this.y)
+            if (target instanceof Line) {
+                let coeff = 0
+                if (Math.abs(target.coeffA) == Infinity) {
+                    //console.log("Inf")
+                    coeff = Math.abs(this.x - target.A.x)
+                } else if (Math.abs(target.coeffA) == 0) {
+                    //console.log("Zero")
+                    coeff = Math.abs(this.y + target.coeffB)
+                } else {
+                    //console.log("Not zero")
+                    coeff = Math.abs(this.x + (1 / target.coeffA) * this.y + (1 / target.coeffA) * target.coeffB) / Math.sqrt((1 / target.coeffA) ** 2 + 1)
+                }
+                //console.log("coeff:", coeff)
+                return coeff
+            } else return Math.sqrt((this.x - target.x) ** 2 + (this.y - target.y) ** 2)
         }
     }
 
@@ -74,12 +88,12 @@ export namespace Geometry {
         constructor(a: Point, b: Point) {
             this.A = a
             this.B = b
-            this.coeffA = (a.y - b.y) / (a.x - b.x)
-            this.coeffB = a.y - a.x * this.coeffA
+            this.coeffA = (b.y - a.y) / (a.x - b.x)
+            this.coeffB = - a.y - a.x * this.coeffA
         }
 
         evalEquation(x: number) {
-            return x * this.coeffA + this.coeffB
+            return (x * this.coeffA + this.coeffB) * - 1
         }
     }
 
@@ -96,12 +110,16 @@ export namespace Geometry {
         }
     }
 
-    export function angleOf(line: Line) {
-        return Geometry.r2d(Math.atan((line.A.y - line.B.y) / (line.A.x - line.B.x)))
-    }
-
-    export function angleBetween(lineA: Line, lineB: Line) {
-
+    export function angleOf(A: Point, B: Point): number
+    export function angleOf(line: Line): number
+    export function angleOf(arg1: Line | Point, arg2?: Point) {
+        if (arg1 instanceof Line) {
+            return r2d(Math.atan((arg1.A.y - arg1.B.y) / (arg1.A.x - arg1.B.x)))
+        } else {
+            let vm = arg1.y < arg2!.y ? 1 : -1
+            let hm = arg1.x < arg2!.x ? 0 : 180
+            return (vm * hm) + r2d(Math.atan((arg1.y - arg2!.y) / (arg1.x - arg2!.x)))
+        }
     }
 
     export function r2d(radians: number) {
@@ -120,39 +138,50 @@ export namespace Geometry {
     export class Vector implements IVector {
         x: number
         y: number
+        anchorPoint: Point
 
-        constructor(x: number = 0, y: number = 0) {
+        constructor(x: number = 0, y: number = 0, anchorPoint: Point = new Point(0, 0)) {
             this.x = x
             this.y = y
+            this.anchorPoint = anchorPoint
         }
 
-        static from(length: number, angle: number): Vector {
-            return new Vector(Math.cos(d2r(angle)) * length, Math.sin(d2r(angle)) * length)
+        static from(length: number, angle: number, anchor: Point): Vector {
+            return new Vector(Math.cos(d2r(angle)) * length, Math.sin(d2r(angle)) * length, anchor)
         }
 
         static add(v1: Vector, v2: Vector): Vector {
-            return new Vector(v1.x + v2.x,  v1.y + v2.y)
+            return new Vector(v1.x + v2.x,  v1.y + v2.y, v1.anchorPoint)
         }
 
         toVelocity() {
+            //console.log(this.x, this.y)
             let vM = this.y < 0 ? 1 : -1
-            let hM = this.x < 0 ? 180 : 0
+            let hM = this.x < 0 ? -180 : 0
+            //console.log((hM * vM) - r2d(Math.atan((-this.y) / this.x)))
+            let resAngle = (hM * vM) - r2d(Math.atan((-this.y) / this.x))
             return {
                 speed: Math.sqrt(this.x ** 2 + this.y ** 2),
-                angle: (hM * vM) - r2d(Math.atan((-this.y) / this.x))
+                angle: isNaN(resAngle) ? 0 : resAngle
+                //angle: r2d(Math.atan2((-this.y), this.x))
             }
         }
 
         multiply(num: number): Vector {
-            return new Vector(this.x * num, this.y * num)
+            return new Vector(this.x * num, this.y * num, this.anchorPoint)
         }
 
-        deflectionAngleWith(target: Line | Hitbox.Circular) {
+        deflectFrom(target: Hitbox.Linear | Hitbox.Circular) {
             let velocity = this.toVelocity()
-            // 180 = kąt prostej l + 90 + alfa
-            // 180 alfa + 90 - kąt wektoru piłki + kąt odbicia
-            // beta(prostopadła do l, linia pozioma) = 180 - kąt prostej l - 90
-            // 90 - kąt odbicia + beta + kąt końcowy = 180 
+            //console.log("Current velocity:", velocity)
+            if (target instanceof Hitbox.Linear) {
+                velocity.angle = (180 - (180 + 2 * target.line.angle - velocity.angle) % 360) * - 1
+            } else {
+                console.log("From ball:", angleOf(this.anchorPoint, target.s))
+                console.log("From hitbox:", angleOf(target.s, this.anchorPoint))
+                velocity.angle = 2 * angleOf(this.anchorPoint, target.s) - velocity.angle - 180
+            }
+            return velocity
         }
     }
 }

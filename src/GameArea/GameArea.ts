@@ -27,9 +27,9 @@ export class GameArea extends Renderer {
         this.ball = ball
 
         this.render()
-        setInterval(() => {
-            this.render()
-        }, Envs.drawingTimeout)
+        // setInterval(() => {
+        //     this.render()
+        // }, Envs.drawingTimeout)
     }
 
     getNamedHitbox(name: string) {
@@ -58,8 +58,8 @@ export class GameArea extends Renderer {
             this.drawHitboxes(this.hitboxDefinition.hitboxes)
             ctx.arc(this.ball.hitbox.s.x, this.ball.hitbox.s.y, this.ball.hitbox.r, 0, 2 * Math.PI)
             ctx.moveTo(this.ball.hitbox.s.x, this.ball.hitbox.s.y)
-            let v = Geometry.Vector.from(this.ball.speed, this.ball.angle)
-            ctx.lineTo(this.ball.hitbox.s.x + v.x * 25, this.ball.hitbox.s.y + v.y * 25)
+            let v = Geometry.Vector.from(this.ball.speed, this.ball.angle, this.ball.hitbox.s)
+            ctx.lineTo(this.ball.hitbox.s.x + v.x * Envs.vectorLengthMod, this.ball.hitbox.s.y + v.y * Envs.vectorLengthMod)
             ctx.stroke()
             ctx.beginPath()
             ctx.strokeStyle = "rgb(240, 140, 140)"
