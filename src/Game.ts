@@ -9,6 +9,8 @@ export class Game {
 	gameArea: GameArea
 	paletteLeft: Hitbox.Rotatable
 	paletteRight: Hitbox.Rotatable
+	ballInStart = true
+	points: number = 0
 
 	constructor() {
 		this.display = new SixteenSegmentDisplay("display", "test")
@@ -31,4 +33,14 @@ export class Game {
 		}
 		return foundHitboxes
 	}
+
+	addPoints(points: number) {
+		this.points += points * 100
+		this.display.renderText(this.points.toString())
+	}
 }
+
+Envs.debugMode = true
+Envs.preferredDarkMode = true
+Envs.showBounceChecks = false
+export let game = new Game()

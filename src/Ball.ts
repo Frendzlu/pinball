@@ -10,11 +10,12 @@ import Vector = Geometry.Vector;
 
 const startingData: [Point, number] = [
     //new Point(1850, 2600),
-    new Point(1050, 2200),
+    new Point(370, 1100),
     42
 ]
 
 const GRAVITY_VECTOR: Geometry.Vector = new Geometry.Vector(Envs.horizontalGravityModifier, Envs.verticalGravityModifier)
+const ANTIGRAVITY_VECTOR: Geometry.Vector = new Geometry.Vector(Envs.horizontalGravityModifier, -1 * Envs.verticalGravityModifier)
 
 export class Ball {
     hitbox: Hitbox.Circular
@@ -27,13 +28,13 @@ export class Ball {
     constructor(options: CanvasOptions, objRef: Game) {
         //let image = document.getElementById("ball") as HTMLImageElement
         this.hitbox = new Hitbox.Circular(...startingData)
-        this.angle = 0
-        this.speed = 0
+        this.angle = -120
+        this.speed = 25
         this.options = options
         this.game = objRef
-        // this.interval = setInterval(() => {
-        //     this.move()
-        // }, Envs.calculationTimeout)
+        this.interval = setInterval(() => {
+            this.move()
+        }, Envs.calculationTimeout)
     }
 
     move() {
@@ -83,40 +84,61 @@ export class Ball {
         let hitboxes = this.game.checkHitboxes()
         if (!hitboxes.length) return true
         else {
-            console.group("Found")
-            console.log("Hitboxes:", hitboxes)
+            //console.group("Found")
+            //console.log("Hitboxes:", hitboxes)
             let filtered = hitboxes.filter(hitbox => hitbox.checkCondition(this.hitbox))
-            console.groupEnd()
-            console.group("Filtered")
-            console.log("Hitboxes:", filtered)
+            //console.groupEnd()
+            //console.group("Filtered")
+            //console.log("Hitboxes:", filtered)
             let collided = filtered.filter(hitbox => hitbox.checkCollision(this.hitbox))
-            console.groupEnd()
-            console.group("Collided")
-            console.log("Hitboxes:", collided)
+            //console.groupEnd()
             if (collided.length != 0) {
+
+                console.group("Collided")
+                console.log("Hitboxes:", collided)
                 let vectors: Vector[] = [new Vector(0, 0, this.hitbox.s)]
+                let smthHappened = false
                 for (let hitbox of collided) {
                     console.group(hitbox)
                     let velocity = currentVector.toVelocity()
                     console.log("Hitbox options:", hitbox.options)
+                    let flage = false
                     if (hitbox.options.shouldBounce) {
                         velocity = currentVector.deflectFrom(hitbox)
-                        velocity.speed *= Envs.forceDispersion
                         let shift = 0
                         let shiftAngle = 0
                         if (hitbox instanceof Hitbox.Linear) {
-                            shift = this.hitbox.r - this.hitbox.s.distanceFrom(hitbox.line)+0.1
-                            if (hitbox.condition != CollisionConditions.Right){
+                            shift = this.hitbox.r - this.hitbox.s.distanceFrom(hitbox.line) + 0.1
+                            if (hitbox.condition != CollisionConditions.Right) {
                                 if (hitbox.condition == CollisionConditions.Left) shiftAngle = -180
                                 else {
                                     shiftAngle = hitbox.line.angle - (hitbox.condition == CollisionConditions.Above ? 90 : -90)
                                 }
                             }
+                            if (hitbox.condition == CollisionConditions.Above) {
+                                let modifiedLineAngle = hitbox.line.angle < 0 ? 180 + hitbox.line.angle : hitbox.line.angle
+                                if (velocity.speed < Envs.minSpeedOnCollision) {
+                                    velocity.angle = modifiedLineAngle
+                                } else if (Math.abs(velocity.angle - modifiedLineAngle) < 5) {
+                                    velocity.angle = modifiedLineAngle
+                                }
+                                velocity.angle += modifiedLineAngle < 90 ? 1 : -1
+                            }
                         } else {
                             console.log(this.hitbox.s.distanceFrom(hitbox.s))
-                            shift = this.hitbox.r - (this.hitbox.s.distanceFrom(hitbox.s)-hitbox.r)+1
+                            shift = this.hitbox.r - (this.hitbox.s.distanceFrom(hitbox.s) - hitbox.r) + 1
                             shiftAngle = Geometry.angleOf(hitbox.s, this.hitbox.s)
                         }
+                        if (velocity.speed < Envs.minSpeedOnCollision) {
+                            flage = true
+                        }
+                        if (!(hitbox instanceof Hitbox.Circular) && hitbox.condition == CollisionConditions.Above) {
+                            let modifiedLineAngle = hitbox.line.angle < 0 ? 180 + hitbox.line.angle : hitbox.line.angle
+                            if (Math.abs(velocity.angle - modifiedLineAngle) < 5) {
+                                flage = true
+                                velocity.speed *= 1.01
+                            } else velocity.speed *= Envs.forceDispersion
+                        } else velocity.speed *= Envs.forceDispersion
                         console.log("Shift:", shift)
                         console.log("Deflection angle:", velocity.angle, "Current angle", this.angle)
                         console.log("Shift angle:", shiftAngle)
@@ -129,11 +151,26 @@ export class Ball {
                             console.log("Distance:", this.hitbox.s.distanceFrom(hitbox.s))
                         }
                         console.log("Velocity:", velocity)
-                    }
+                        if (!(hitbox instanceof Hitbox.Circular) && hitbox.rotatable) {
+                            console.log(hitbox.rotatable.currentRotation)
+                            console.log(hitbox.rotatable.allowedRotation)
+                            console.log(hitbox.rotatable.minimalRotation)
+                            if (hitbox.rotatable.currentRotation != hitbox.rotatable.allowedRotation && hitbox.rotatable.currentRotation != hitbox.rotatable.minimalRotation) {
+                                flage = true
+                                velocity.angle = 0
+                                velocity.speed = 0
+                            }
+                        }
+                    } else smthHappened = true
                     if (hitbox.options.eventHandle) {
                         for (let event of Events[hitbox.options.eventHandle]) {
                             event(hitbox, {velocity: velocity})
                         }
+                    }
+                    console.log("flage:", flage)
+                    if (flage) {
+                        vectors.push(ANTIGRAVITY_VECTOR)
+                        smthHappened = true
                     }
                     vectors.push(Vector.from(velocity.speed, velocity.angle, this.hitbox.s))
                     console.groupEnd()
@@ -156,9 +193,8 @@ export class Ball {
                 this.angle = resultingVector.angle
                 this.speed = resultingVector.speed
                 console.groupEnd()
-                return false
+                return smthHappened
             }
-            console.groupEnd()
             return true
         }
     }
