@@ -6,7 +6,7 @@ export namespace Envs {
     export var verticalGravityModifier = 0.5
     export var calculationTimeout = 20
     export var drawingTimeout = 10
-    export var forceDispersion = 0.3
+    export var forceDispersion = 0.5
     export var paletteBouncerMod = 1.01
     export var bouncerConst = 21.37
     export var bouncerMod = 1.69

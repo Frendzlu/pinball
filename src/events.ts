@@ -17,7 +17,7 @@ type Events = {
 
 let blackHoleEnabled = true
 
-export let Events: Events = {
+export const Events: Events = {
 	outOfBounds: [],
 	rightPaletteBouncer: [
 		(_hitbox, args) => {
@@ -62,6 +62,14 @@ export let Events: Events = {
 				}, 5000)
 				game.addPoints(10000)
 				blackHoleEnabled = false
+				let sound = document.getElementById("blackHoleSound") as HTMLAudioElement
+				setTimeout(() => {
+					sound.play()
+				}, 2000)
+				setTimeout(() => {
+					sound.pause()
+					sound.currentTime = 0
+				}, 2000 + sound.duration*1000)
 			}
 		}
 	],
@@ -167,5 +175,5 @@ export let Events: Events = {
 		(_hitbox, _args) => {
 			game.addPoints(500)
 		}
-	],
+	]
 }

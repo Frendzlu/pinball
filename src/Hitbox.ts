@@ -69,7 +69,7 @@ export namespace Hitbox {
 			this.r = r
 			this.options = options
 			if (this.options.shouldBounce === undefined) this.options.shouldBounce = true
-			if (this.options.eventHandle) console.log(this)
+			//if (this.options.eventHandle) console.log(this)
 		}
 
 		checkCondition(_p: Circular) {
@@ -78,7 +78,7 @@ export namespace Hitbox {
 
 		checkCollision(ball: Circular) {
 			let dist = ball.s.distanceFrom(this.s)
-			console.log("Distance:", dist, "this radius:", this.r, "ball radius:", ball.r)
+			//console.log("Distance:", dist, "this radius:", this.r, "ball radius:", ball.r)
 			return dist <= this.r + ball.r
 		}
 	}
@@ -94,9 +94,9 @@ export namespace Hitbox {
 			this.condition = condition
 			if (this.line.coeffA == 0) {
 				if (this.condition == CollisionConditions.Below) {
-					this.line.angle = 0
-				} else if (this.condition == CollisionConditions.Above) {
 					this.line.angle = 180
+				} else if (this.condition == CollisionConditions.Above) {
+					this.line.angle = 0
 				}
 			}
 			if (options.shouldBounce == undefined) options.shouldBounce = true
@@ -207,6 +207,15 @@ export namespace Hitbox {
 			this.hitboxes = hitboxes
 			hitboxVsBall = hitboxVsBall.filter(hb => hb.checkCollision(ball.hitbox))
 			for (let hitbox of hitboxVsBall) {
+				if (hitboxVsBall.length > 0) {
+					//console.log("playing sound")
+					let sound = document.getElementById("paletteSound") as HTMLAudioElement
+					sound.play()
+					setTimeout(() => {
+						sound.pause()
+						sound.currentTime = 0
+					}, sound.duration*1000)
+				}
 				let shift = 0
 				let shiftAngle = -90
 				if (hitbox instanceof Linear) {

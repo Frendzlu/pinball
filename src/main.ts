@@ -4,6 +4,13 @@ import {game} from "./Game";
 import {KeyListener} from "./KeyListener";
 import {Envs} from "./envs";
 
+let sound = document.getElementById("blackHoleSound") as HTMLAudioElement
+sound.pause()
+sound.currentTime = 0
+sound = document.getElementById("paletteSound") as HTMLAudioElement
+sound.pause()
+sound.currentTime = 0
+
 let rotatingLeft = false
 let rotatingRight = false
 let keyRegister = new KeyListener()
@@ -57,8 +64,15 @@ keyRegister.add("P", ()=> {
 let momentum = 0
 
 keyRegister.add(" ", ()=> {
-	momentum += 1
+	if (game.ballInStart) {
+		if (momentum < 72) momentum += 1
+		game.gameArea.currentPinPos = Math.floor(momentum / 12)
+	}
 }, true, () => {
-	console.log(momentum)
+	if (game.ballInStart) {
+		game.gameArea.ball.speed = momentum * 12
+		game.gameArea.ball.angle = -90
+		game.gameArea.currentPinPos = 0
+	}
 })
 Events.outOfBounds.push(()=>{game.onLost()})

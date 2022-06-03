@@ -16,7 +16,7 @@ export class Game {
 		this.display = new SixteenSegmentDisplay("display", "test")
 		this.display.renderText("Player 1!")
 
-		this.gameArea = new GameArea("ga", "gac", defaultOptions, new Ball(defaultOptions, this))
+		this.gameArea = new GameArea("ga", "gac", {width: 1920, height: 940}, new Ball(defaultOptions, this))
 		this.paletteLeft = this.gameArea.getNamedHitbox("paletteLeft")!
 		this.paletteRight = this.gameArea.getNamedHitbox("paletteRight")!
 	}

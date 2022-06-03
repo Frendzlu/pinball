@@ -1777,7 +1777,8 @@
         },
         "condition": 2,
         "options" : {
-          "eventHandle": "sunRun"
+          "eventHandle": "sunRun",
+          "shouldBounce": false
         }
       },
       {
@@ -1791,7 +1792,8 @@
         },
         "condition": 0,
         "options" : {
-          "eventHandle": "startBlock"
+          "eventHandle": "startBlock",
+          "shouldBounce": false
         }
       },
       {
@@ -1805,7 +1807,8 @@
         },
         "condition": 0,
         "options" : {
-          "eventHandle": "warpLetterW"
+          "eventHandle": "warpLetterW",
+          "shouldBounce": false
         }
       },
       {
@@ -1819,7 +1822,8 @@
         },
         "condition": 0,
         "options" : {
-          "eventHandle": "warpLetterA"
+          "eventHandle": "warpLetterA",
+          "shouldBounce": false
         }
       },
       {
@@ -1833,7 +1837,8 @@
         },
         "condition": 0,
         "options" : {
-          "eventHandle": "warpLetterR"
+          "eventHandle": "warpLetterR",
+          "shouldBounce": false
         }
       },
       {
@@ -1847,7 +1852,8 @@
         },
         "condition": 0,
         "options" : {
-          "eventHandle": "warpLetterP"
+          "eventHandle": "warpLetterP",
+          "shouldBounce": false
         }
       },
       {
